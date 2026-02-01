@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Context Tasks
 
-## Getting Started
+**The right task, at the right moment.**
 
-First, run the development server:
+Context Tasks is an intelligent todo list that uses your physical location to rank and suggest tasks. It helps you focus on what you can actually do *right now*, filtering out the noise.
 
+![App Screenshot](public/screenshot.png)
+
+## ✨ Features
+
+*   **📍 Context Intelligence:** Automatically detects if you are at **Home**, **Work**, or the **Gym**.
+*   **🧠 Smart Ranking:** Tasks are sorted by priority and context relevance.
+*   **⚡️ Quick Actions:** Swipe right to complete, tap to edit.
+*   **📱 Native Feel:** Smooth animations, haptic feedback (planned), and gesture-driven UI.
+*   **☁️ Cloud Sync:** Powered by **Supabase** for real-time sync across devices.
+*   **🔐 Magic Auth:** Passwordless login via Email Magic Links.
+
+## 🛠 Tech Stack
+
+*   **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **State Management:** [Zustand](https://github.com/pmndrs/zustand)
+*   **Animations:** [Framer Motion](https://www.framer.com/motion/)
+*   **Database & Auth:** [Supabase](https://supabase.com/)
+*   **Icons:** [Lucide React](https://lucide.dev/)
+
+## 🚀 Getting Started
+
+### 1. Clone & Install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/context-tasks.git
+cd context-tasks
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Setup
+Create a `.env.local` file in the root directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Database Setup (Supabase)
+Run the following SQL in your Supabase SQL Editor to create the necessary tables:
 
-## Learn More
+```sql
+-- Tasks
+create table tasks (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  title text not null,
+  context text not null,
+  duration integer not null,
+  priority text default 'MEDIUM',
+  status text default 'TODO',
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
 
-To learn more about Next.js, take a look at the following resources:
+-- User Locations
+create table user_locations (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users not null,
+  name text not null,
+  lat double precision not null,
+  lng double precision not null,
+  radius double precision not null,
+  icon text not null
+);
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+-- Enable RLS
+alter table tasks enable row level security;
+alter table user_locations enable row level security;
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+-- Policies
+create policy "Users can crud their own tasks" on tasks for all using (auth.uid() = user_id);
+create policy "Users can crud their own locations" on user_locations for all using (auth.uid() = user_id);
+```
 
-## Deploy on Vercel
+### 4. Run Locally
+```bash
+npm run dev
+```
+Visit `http://localhost:3000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📦 Deployment
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The app is ready for [Vercel](https://vercel.com).
+1.  Push to GitHub.
+2.  Import project in Vercel.
+3.  Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` to Vercel Environment Variables.
+4.  Deploy!
