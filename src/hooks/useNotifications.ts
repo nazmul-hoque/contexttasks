@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTaskStore } from '@/store/useTaskStore';
-import { useContextStore } from '@/store/useContextStore';
+import { useContextStore, type UserLocation } from '@/store/useContextStore';
 
 const COOLDOWN_MS = 4 * 60 * 60 * 1000; // 4 Hours
 
