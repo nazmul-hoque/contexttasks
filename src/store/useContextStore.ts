@@ -17,6 +17,7 @@ interface ContextState {
     detectedContext: UserLocation | null;
     manualOverride: boolean;
     notificationsEnabled: boolean;
+    locationAccuracy: 'balanced' | 'precise';
 
     // User's saved places
     userLocations: UserLocation[];
@@ -26,6 +27,7 @@ interface ContextState {
         setDetectedContext: (context: UserLocation | null) => void;
         setManualMode: (override: boolean) => void;
         setNotificationsEnabled: (enabled: boolean) => void;
+        setLocationAccuracy: (accuracy: 'balanced' | 'precise') => void;
         addUserLocation: (loc: UserLocation) => Promise<void>;
         fetchUserLocations: () => Promise<void>;
     };
@@ -38,6 +40,7 @@ export const useContextStore = create<ContextState>()(
             detectedContext: null,
             manualOverride: false,
             notificationsEnabled: true, // Default to true
+            locationAccuracy: 'balanced', // Default to balanced for faster performance
             // Default Mock (will be overwritten if logged in and fetched)
             userLocations: [
                 { id: '1', name: 'Home', lat: 0, lng: 0, radius: 200, icon: '🏠' },
@@ -49,6 +52,7 @@ export const useContextStore = create<ContextState>()(
                 setDetectedContext: (context) => set({ detectedContext: context }),
                 setManualMode: (override) => set({ manualOverride: override }),
                 setNotificationsEnabled: (enabled) => set({ notificationsEnabled: enabled }),
+                setLocationAccuracy: (accuracy) => set({ locationAccuracy: accuracy }),
 
                 fetchUserLocations: async () => {
                     const { data: { session } } = await supabase.auth.getSession();
@@ -105,7 +109,8 @@ export const useContextStore = create<ContextState>()(
             name: 'context-storage',
             partialize: (state) => ({
                 userLocations: state.userLocations,
-                notificationsEnabled: state.notificationsEnabled
+                notificationsEnabled: state.notificationsEnabled,
+                locationAccuracy: state.locationAccuracy
             }),
         }
     )

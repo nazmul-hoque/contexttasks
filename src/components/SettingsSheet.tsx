@@ -16,7 +16,7 @@ interface SettingsSheetProps {
 }
 
 export function SettingsSheet({ isOpen, onClose }: SettingsSheetProps) {
-    const { currentLocation, actions, notificationsEnabled, userLocations } = useContextStore();
+    const { currentLocation, actions, notificationsEnabled, userLocations, locationAccuracy } = useContextStore();
     const { user } = useUserStore();
     const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
 
@@ -189,6 +189,31 @@ export function SettingsSheet({ isOpen, onClose }: SettingsSheetProps) {
                             {/* Notifications Section */}
                             <div className="space-y-3">
                                 <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Preferences</h3>
+
+                                {/* Location Accuracy Toggle */}
+                                <button
+                                    onClick={() => actions.setLocationAccuracy(locationAccuracy === 'balanced' ? 'precise' : 'balanced')}
+                                    className="w-full flex items-center justify-between p-4 rounded-2xl bg-secondary/30 border border-white/5 hover:bg-secondary/50 transition-colors"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${locationAccuracy === 'precise' ? 'bg-purple-500/20 text-purple-400' : 'bg-blue-500/20 text-blue-400'
+                                            }`}>
+                                            <MapPin className="w-5 h-5" />
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="font-medium">Location Accuracy</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {locationAccuracy === 'precise' ? 'Precise (GPS)' : 'Balanced (Fast)'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className={`text-sm font-bold ${locationAccuracy === 'precise' ? 'text-purple-400' : 'text-blue-400'
+                                        }`}>
+                                        {locationAccuracy === 'precise' ? '🎯' : '⚡'}
+                                    </div>
+                                </button>
+
+                                {/* Notifications Toggle */}
                                 <button
                                     onClick={toggleNotifications}
                                     className="w-full flex items-center justify-between p-4 rounded-2xl bg-secondary/30 border border-white/5 hover:bg-secondary/50 transition-colors"

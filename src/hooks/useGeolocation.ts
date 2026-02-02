@@ -5,7 +5,7 @@ import { useNotifications } from '@/hooks/useNotifications';
 import { toast } from 'sonner';
 
 export function useGeolocationContext() {
-    const { actions, userLocations, manualOverride, detectedContext } = useContextStore();
+    const { actions, userLocations, manualOverride, detectedContext, locationAccuracy } = useContextStore();
     const { setCurrentLocation, setDetectedContext } = actions;
     const { sendArrivalNotification } = useNotifications();
 
@@ -14,6 +14,19 @@ export function useGeolocationContext() {
             console.warn('Geolocation is not supported by this browser.');
             return;
         }
+
+        // Configure geolocation options based on user preference
+        const geolocationOptions = locationAccuracy === 'precise'
+            ? {
+                enableHighAccuracy: true,  // Use GPS for precise location
+                timeout: 20000,            // 20 second timeout
+                maximumAge: 5000,          // Require fresh GPS fix
+            }
+            : {
+                enableHighAccuracy: false, // Use WiFi/cell towers for faster detection
+                timeout: 10000,            // 10 second timeout
+                maximumAge: 30000,         // Accept cached positions up to 30s old
+            };
 
         const watcher = navigator.geolocation.watchPosition(
             (position) => {
@@ -76,14 +89,10 @@ export function useGeolocationContext() {
                     });
                 }
             },
-            {
-                enableHighAccuracy: true,
-                timeout: 20000,
-                maximumAge: 5000,
-            }
+            geolocationOptions
         );
 
         return () => navigator.geolocation.clearWatch(watcher);
         // Removed detectedContext from deps to prevent restart loop
-    }, [userLocations, manualOverride, setCurrentLocation, setDetectedContext, sendArrivalNotification]);
+    }, [userLocations, manualOverride, locationAccuracy, setCurrentLocation, setDetectedContext, sendArrivalNotification]);
 }
